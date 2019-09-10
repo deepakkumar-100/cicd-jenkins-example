@@ -1,4 +1,4 @@
-import groovy.json.* 
+node(){
 
 	
 	stage('Build') 
@@ -22,3 +22,4 @@ import groovy.json.*
 	
 	}
     
+}
