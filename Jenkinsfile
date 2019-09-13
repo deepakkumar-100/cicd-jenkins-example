@@ -1,25 +1,32 @@
-node(){
+pipeline {
 
-	
-	stage('Build') 
-	{
-		try 
-		{ 
-			
-      sh "set path=C:\\maven\\apache-maven-3.6.2\\bin"
-       sh "set path=C:\\Program Files\\Java\\jdk1.8.0_45\\bin"
-			
-			sh "mvn -version"
-      sh "java -version"
-			sh "mvn -U clean install -Dmaven.test.skip=true"
-			currentBuild.result = 'SUCCESS'
-		}
-		catch (any) 
-		{
-			currentBuild.result = 'FAILURE'
-			throw any
-		} 
-	
-	}
-    
+    agent any
+
+    stages {
+
+        stage ('Build') {
+            steps {
+                withMaven(maven: 'maven_3_5_0') {
+                    sh 'mvn clean package'
+                }
+            }
+        }
+
+        stage ('Deploy') {
+            steps {
+
+                withCredentials([[$class          : 'UsernamePasswordMultiBinding',
+                                  credentialsId   : 'PCF_LOGIN',
+                                  usernameVariable: 'USERNAME',
+                                  passwordVariable: 'PASSWORD']]) {
+
+                    sh '/usr/local/bin/cf login -a http://api.run.pivotal.io -u $USERNAME -p $PASSWORD'
+                    sh '/usr/local/bin/cf push'
+                }
+            }
+
+        }
+
+    }
+
 }
