@@ -1,32 +1,45 @@
 pipeline {
-
-    agent any
-
-    stages {
-
-        stage ('Build') {
-            steps {
-                withMaven(maven: 'maven_3_5_0') {
-                    sh 'mvn clean package'
-                }
-            }
-        }
-
-        stage ('Deploy') {
-            steps {
-
-                withCredentials([[$class          : 'UsernamePasswordMultiBinding',
-                                  credentialsId   : 'PCF_LOGIN',
-                                  usernameVariable: 'USERNAME',
-                                  passwordVariable: 'PASSWORD']]) {
-
-                    sh '/usr/local/bin/cf login -a http://api.run.pivotal.io -u $USERNAME -p $PASSWORD'
-                    sh '/usr/local/bin/cf push'
-                }
-            }
-
-        }
-
-    }
-
+         agent any
+         stages {
+                 stage('One') {
+                 steps {
+                     echo 'Hi, this is Zulaikha from edureka'
+                 }
+                 }
+                 stage('Two') {
+                 steps {
+                    input('Do you want to proceed?')
+                 }
+                 }
+                 stage('Three') {
+                 when {
+                       not {
+                            branch "master"
+                       }
+                 }
+                 steps {
+                       echo "Hello"
+                 }
+                 }
+                 stage('Four') {
+                 parallel { 
+                            stage('Unit Test') {
+                           steps {
+                                echo "Running the unit test..."
+                           }
+                           }
+                            stage('Integration test') {
+                              agent {
+                                    docker {
+                                            reuseNode true
+                                            image 'ubuntu'
+                                           }
+                                    }
+                              steps {
+                                echo "Running the integration test..."
+                              }
+                           }
+                           }
+                           }
+              }
 }
